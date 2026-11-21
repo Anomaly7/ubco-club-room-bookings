@@ -1,0 +1,42 @@
+name: Refresh club room bookings
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # quick check: all rooms, this week + next 5 (one request)
+    - cron: "45 10 * * *"    # full year, once a day (3:45 AM Pacific)
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Refresh the whole year"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Refresh from the UBCO timetable
+        run: python scripts/refresh.py ${{ (github.event.schedule == '45 10 * * *' || inputs.full) && '--full' || '' }}
+      - name: Save changes
+        run: |
+          git config user.name "room-bookings-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "No booking changes."
+          else
+            git commit -m "Bookings update $(TZ=America/Vancouver date '+%Y-%m-%d %H:%M') Pacific"
+            git push
+          fi
