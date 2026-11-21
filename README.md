@@ -1,7 +1,7 @@
 # UBCO club room bookings
 
 A dataset of the UBC Okanagan classrooms and labs booked for **Students' Union Okanagan (SUO) clubs and course unions**,
-refreshed automatically every 10 minutes.
+refreshed every 10 minutes.
 
 ## Where the data comes from
 
@@ -26,12 +26,14 @@ and Library study rooms (LibCal).
 
 ## How it updates
 
-A GitHub Actions job (`.github/workflows/refresh.yml`):
-- every 10 minutes asks the timetable for all rooms for this week and the next five, in **one** request;
-- once a day refreshes the whole year in 6-week chunks.
+UBC's timetable is only open to UBC/approved networks (cloud servers get a "UBC VPNLess Access" sign-in page), so the
+refresh runs on a computer that can reach it: `scripts/publish.py`, every 10 minutes from a Windows scheduled task.
+- Each run asks the timetable for all rooms for this week and the next five, in **one** request.
+- About once a day it refreshes the whole year instead, in 6-week chunks.
+- It commits and pushes here only when a booking changed. If the timetable is down or returns something implausible,
+  nothing is changed. Classes are never stored.
 
-If the timetable is down or returns something implausible, nothing is changed. Classes are never stored.
-Run it yourself with `python scripts/refresh.py` (or `--full`).
+Run it yourself with `python scripts/refresh.py` (or `--full`) from a UBC-reachable network.
 
 Unclassified bookings that are probably clubs with unfamiliar codes are listed at the end of `summary.md`;
 add the code to `ALIAS` in `scripts/build.py` to include them.

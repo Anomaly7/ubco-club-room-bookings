@@ -1,4 +1,5 @@
 data/refresh.log
+data/.last_full
 scripts/all_rows.csv
 scripts/sample.html
 __pycache__/

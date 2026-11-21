@@ -1,9 +1,8 @@
 name: Refresh club room bookings
 
+# The schedule is OFF: UBC's timetable is behind "UBC VPNLess Access" for cloud servers, so GitHub can't read it.
+# Sam's PC runs scripts/publish.py every 10 minutes instead and pushes the data here. Manual runs stay possible.
 on:
-  schedule:
-    - cron: "*/10 * * * *"   # quick check: all rooms, this week + next 5 (one request)
-    - cron: "45 10 * * *"    # full year, once a day (3:45 AM Pacific)
   workflow_dispatch:
     inputs:
       full:
@@ -28,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Refresh from the UBCO timetable
-        run: python scripts/refresh.py ${{ (github.event.schedule == '45 10 * * *' || inputs.full) && '--full' || '' }}
+        run: python scripts/refresh.py ${{ (inputs.full) && '--full' || '' }}
       - name: Save changes
         run: |
           git config user.name "room-bookings-bot"
