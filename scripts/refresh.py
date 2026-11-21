@@ -94,7 +94,14 @@ def main():
         try:
             fresh, total = fetch(window)
         except Exception as e:  # site down, timeout, page changed
-            log(f"Pull FAILED for weeks {window[0]}-{window[-1]} ({type(e).__name__}); kept the previous data.")
+            log(f"Pull FAILED for weeks {window[0]}-{window[-1]} ({type(e).__name__}: {str(e)[:200]}); kept the previous data.")
+            try:  # what the timetable actually answered, for the run log
+                url, page = sws.get(sws.BASE)
+                import re as _re
+                title = _re.search(r"<title>(.*?)</title>", page, _re.S | _re.I)
+                print("Timetable answered:", url, "| title:", title.group(1).strip() if title else "-", "|", len(page), "bytes")
+            except Exception as e2:
+                print("Timetable unreachable:", type(e2).__name__, str(e2)[:200])
             return 1
         before_in_window = sum(1 for r in store if weeks_of(r["Weeks"]) & set(window))
         # A class-filled window with no events, or losing most events at once, means a bad read, not real cancellations.
