@@ -1,4 +1,4 @@
-import csv, re, datetime as dt, collections, os, sys
+import csv, re, datetime as dt, collections, os, sys, json
 
 OUT = sys.argv[1]
 clubs = [l.strip() for l in open(os.path.join(OUT, "suo_clubs_2026-11-21.txt"), encoding="utf-8") if l.strip()]
@@ -116,6 +116,27 @@ def write(name, data):
 clubocc = [o for o in occ if o["category"] == "SUO club or course union"]
 write("all_room_event_bookings_2026W.csv", occ)
 write("suo_club_room_bookings_2026W.csv", clubocc)
+
+
+# Compact file for OpenRoom (https://openroom-one.vercel.app), which reads it straight from GitHub so a room
+# booked for a club or event isn't shown as free. Row: [date, room, start min, end min, title, kind].
+def _mins(hhmm):
+    h, m = hhmm.split(":")
+    return int(h) * 60 + int(m)
+
+
+def _kind(o):
+    if o["category"] == "SUO club or course union":
+        return "club"
+    return "exam" if "exam" in o["event"].lower() else "event"
+
+
+compact = [[o["date"], o["room"], _mins(o["start"]), _mins(o["end"]),
+            (o["club"] or o["event"]) if o["category"] == "SUO club or course union" else o["event"], _kind(o)]
+           for o in occ if o["booking_status"] != "WRB-CANCELLED" and o["category"] != "Cancelled"]
+with open(os.path.join(OUT, "openroom_bookings.json"), "w", encoding="utf-8") as f:
+    json.dump({"source": "UBCO online timetable event (WRB) bookings", "count": len(compact), "bookings": compact},
+              f, ensure_ascii=False, separators=(",", ":"))
 
 cats = collections.Counter(o["category"] for o in occ)
 byclub = collections.Counter(o["club"] for o in clubocc)

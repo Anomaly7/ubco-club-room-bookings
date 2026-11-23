@@ -22,6 +22,7 @@ and Library study rooms (LibCal).
 | `all_room_event_bookings_2026W.csv` | Every non-class booking (clubs, exams, university events, unclassified) |
 | `summary.md` | Counts by club, room, weekday, start hour and month |
 | `changes.md` | Upcoming club bookings that were added or removed, with the time they were noticed |
+| `openroom_bookings.json` | Compact copy of every active booking for [OpenRoom](https://openroom-one.vercel.app), which reads it live so booked rooms don't show as free: `[date, room, start minute, end minute, title, kind]` (kind = club, event or exam) |
 | `event_rows.csv` | The raw event bookings as the timetable lists them |
 
 ## How it updates

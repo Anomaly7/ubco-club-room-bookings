@@ -8,6 +8,7 @@ runners can't read it. This PC can, so a Windows scheduled task runs this every 
 """
 import os
 import subprocess
+NOWIN = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # no console flash on Windows
 import sys
 import time
 
@@ -17,13 +18,13 @@ STAMP = os.path.join(REPO, "data", ".last_full")
 
 
 def git(*args):
-    return subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True)
+    return subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, creationflags=NOWIN)
 
 
 def main():
     full = not os.path.exists(STAMP) or time.time() - os.path.getmtime(STAMP) > 20 * 3600
     git("pull", "--rebase", "--autostash", "-q")
-    res = subprocess.run([sys.executable, os.path.join(HERE, "refresh.py")] + (["--full"] if full else []), cwd=HERE)
+    res = subprocess.run([sys.executable, os.path.join(HERE, "refresh.py")] + (["--full"] if full else []), cwd=HERE, creationflags=NOWIN)
     if res.returncode != 0:
         return res.returncode
     if full:

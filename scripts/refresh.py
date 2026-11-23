@@ -13,6 +13,7 @@ import csv
 import datetime as dt
 import os
 import subprocess
+NOWIN = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # no console flash on Windows
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -121,7 +122,7 @@ def main():
         w = csv.DictWriter(f, COLS)
         w.writeheader()
         w.writerows(store)
-    res = subprocess.run([sys.executable, "build.py", DATA], capture_output=True, text=True)
+    res = subprocess.run([sys.executable, "build.py", DATA], capture_output=True, text=True, creationflags=NOWIN)
     os.remove("all_rows.csv")
     if res.returncode != 0:
         log("Build FAILED: " + res.stderr[-300:].replace("\n", " "))
